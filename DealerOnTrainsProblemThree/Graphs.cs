@@ -102,12 +102,9 @@ namespace DealerOnTrainsProblemThree
 
         private List<string> AllPathFromNode(Node source, Node destination, int maxStop)
         {
-
             List<string> seenPath = new List<string>();
             List<string> foundPath = new List<string>();
-
             var adjancentList = source.ListOfAllEdgesConnectedToThisNode();
-
             foreach (Edge edge in adjancentList)
             {
                 int counter = 1;
@@ -145,12 +142,10 @@ namespace DealerOnTrainsProblemThree
                         currentPath = currentPath.Length == 1 ? currentPath : currentPath.Substring(0, currentPath.Length - 1);
                         counter--;
                     }
-
-
                 }
-
             }
             return foundPath;
+
         }
         public int DijstraAlgorithmShortestPath(string source, string destination)
         {
@@ -167,7 +162,15 @@ namespace DealerOnTrainsProblemThree
 
                 foreach (Edge edge in allDirectEdgesToSource)
                 {
-                    edge.Destination.Distance = Math.Min((sourceNode.Distance + edge.Weight), edge.Destination.Distance);
+                    if (edge.Destination.Equals(destinationNode) && destinationNode.Distance == 0)
+                    {
+                        edge.Destination.Distance = sourceNode.Distance + edge.Weight;
+                    }
+                    else
+                    {
+                        edge.Destination.Distance = Math.Min((sourceNode.Distance + edge.Weight), edge.Destination.Distance);
+                    }
+
                 }
 
                 var smallestEdgeNotVisited = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !x.Visited).OrderBy(t => t.Weight).FirstOrDefault();
@@ -244,7 +247,7 @@ namespace DealerOnTrainsProblemThree
                 while (nodeToVisit.Count != 0 || counter == 1)
                 {
 
-                    if (!seenPath.Contains(currentPath + sourceNode.NodeName) && currentDistance <= maxDiatance)
+                    if (!seenPath.Contains(currentPath + sourceNode.NodeName) && (currentDistance + sourceNodeEdgeDistance) <= maxDiatance)
                     {
                         currentPath += sourceNode.NodeName;
                         currentDistance += sourceNodeEdgeDistance;
