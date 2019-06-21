@@ -104,7 +104,9 @@ namespace DealerOnTrainsProblemThree
         {
             List<string> seenPath = new List<string>();
             List<string> foundPath = new List<string>();
+
             var adjancentList = source.ListOfAllEdgesConnectedToThisNode();
+
             foreach (Edge edge in adjancentList)
             {
                 int counter = 1;
@@ -116,33 +118,57 @@ namespace DealerOnTrainsProblemThree
                 while (nodeToVisit.Count != 0 || counter == 1)
                 {
 
-                    if (!seenPath.Contains(currentPath + sourceNode.NodeName) && counter <= maxStop)
+                    var hasBeenSeen = seenPath.Contains(currentPath + sourceNode.NodeName);
+
+                    if ((!hasBeenSeen && counter <= maxStop) || (hasBeenSeen && counter <= maxStop))
                     {
-                        currentPath += sourceNode.NodeName;
 
-                        seenPath.Add(currentPath);
-
-                        var nodeFound = sourceNode.Equals(destination);
-
-                        if (nodeFound)
+                        if (!hasBeenSeen)
                         {
-                            foundPath.Add(currentPath);
+                            currentPath += sourceNode.NodeName;
+                            seenPath.Add(currentPath);
+                            var nodeFound = sourceNode.Equals(destination);
+
+                            if (nodeFound)
+                            {
+                                foundPath.Add(currentPath);
+                            }
+
+                            var currentSourceUnseenAjacentNode = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !seenPath.Contains((currentPath + x.Destination.NodeName))).FirstOrDefault();
+                            nodeToVisit.Push(sourceNode);
+                            if (currentSourceUnseenAjacentNode != null)
+                            {
+                                sourceNode = currentSourceUnseenAjacentNode.Destination;
+                            }
+                            counter++;
                         }
-                        var currentSourceUnseenAjacentNode = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !seenPath.Contains(currentPath + x.Destination.NodeName)).FirstOrDefault();
-                        nodeToVisit.Push(sourceNode);
-                        if (currentSourceUnseenAjacentNode != null)
+                        else
                         {
-                            sourceNode = currentSourceUnseenAjacentNode.Destination;
+                            sourceNode = nodeToVisit.Pop();
+                            var currentSourceUnseenAjacentNode = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !seenPath.Contains((currentPath + x.Destination.NodeName))).FirstOrDefault();
+                            if (currentSourceUnseenAjacentNode != null)
+                            {
+                                nodeToVisit.Push(sourceNode);
+                                sourceNode = currentSourceUnseenAjacentNode.Destination;
+                            }
+                            else
+                            {
+                                currentPath = currentPath.Length == 1 ? currentPath : currentPath.Substring(0, currentPath.Length - 1);
+                                counter--;
+                            }
+
                         }
-                        counter++;
                     }
                     else
                     {
                         sourceNode = nodeToVisit.Pop();
+
                         currentPath = currentPath.Length == 1 ? currentPath : currentPath.Substring(0, currentPath.Length - 1);
                         counter--;
                     }
+
                 }
+
             }
             return foundPath;
 
