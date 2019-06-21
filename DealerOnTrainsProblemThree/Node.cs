@@ -10,6 +10,7 @@ namespace DealerOnTrainsProblemThree
     {
         // Private member-variables
         private string _nodeName;
+        private int _distance;
         private List<Edge> _neighbors;
 
         public Node(string nodeName)
@@ -17,12 +18,23 @@ namespace DealerOnTrainsProblemThree
             _nodeName = nodeName;
             _neighbors = new List<Edge>();
         }
-        
+
         public string NodeName
         {
             get
             {
                 return _nodeName;
+            }
+        }
+        public int Distance
+        {
+            get
+            {
+                return _distance;
+            }
+            set
+            {
+                _distance = value;
             }
         }
         public override int GetHashCode()
@@ -35,10 +47,10 @@ namespace DealerOnTrainsProblemThree
             {
                 return _neighbors.Count();
             }
-            
+
         }
 
-        
+
         /// <summary>
         /// This method exposes the abbility to add an edge to and information to a node connected by this edge
         /// </summary>
@@ -49,7 +61,7 @@ namespace DealerOnTrainsProblemThree
             if (!isEdgeAlreadyInList)
             {
                 _neighbors.Add(neightbor);
-            }          
+            }
         }
         /// <summary>
         /// override the equals method 
@@ -58,7 +70,7 @@ namespace DealerOnTrainsProblemThree
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-            return this.NodeName.Equals(((Node)obj).NodeName,StringComparison.CurrentCultureIgnoreCase);
+            return this.NodeName.Equals(((Node)obj).NodeName, StringComparison.CurrentCultureIgnoreCase);
         }
         /// <summary>
         /// Override the compare to method. 

@@ -38,77 +38,6 @@ namespace DealerOnTrainsProblemThree
             return builder.ToString();
         }
 
-
-        public void FindAllPath(string source, string destination)
-        {
-            var sourceNode = FindNode(source.ToUpper().Trim());
-            var destinationNode = FindNode(destination.ToUpper().Trim());
-            var visited = new LinkedList<Node>();
-            var nodeToVisit = new Stack<Node>();
-            nodeToVisit.Push(sourceNode);
-            while (nodeToVisit.Count != 0)
-            {
-                sourceNode = nodeToVisit.Pop();
-                if (visited.Contains(sourceNode))
-                {
-                    continue;
-                }
-                visited.AddLast(sourceNode);
-                var adjacentlist = sourceNode.ListOfAllEdgesConnectedToThisNode();
-                foreach (var edges in adjacentlist)
-                {
-                    if (visited.Contains(sourceNode))
-                    {
-                        continue;
-                    }
-
-                    if (edges.Destination.Equals(destinationNode))
-                    {
-                        visited.AddLast(edges.Destination);
-                        List<string> allPaths = new List<string>();
-                        visited.RemoveLast();
-                        break;
-                    }
-
-                }
-            }
-        }
-
-
-        public List<string> FindPath(string source, string destination,int maxStop)
-        {
-            //variable for all the paths 
-
-            try
-            {
-                List<string> allPaths = new List<string>();
-                string pathFound = string.Empty;
-                var sourceNode = FindNode(source.ToUpper().Trim());
-                var destinationNode = FindNode(destination.ToUpper().Trim());
-
-                if (sourceNode == null || destination == null)
-                {
-                    //return 0 for this routes is both the source and destination is null
-                    return allPaths;
-                }
-
-                allPaths = AllPathFromNode(sourceNode, destinationNode, maxStop);
-
-                return allPaths;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Something went wrong performing this task this is sample of the issue {ex.Message}");
-                throw ex;
-            }
-            finally
-            {
-                GC.Collect();
-            }
-        }
-
-
-
         private bool IsThereAnyUnvisitedNode(List<Edge> edges)
         {
             return edges.Any(d => !d.Visited);
@@ -162,7 +91,7 @@ namespace DealerOnTrainsProblemThree
 
 
 
-        
+
         private void printPath(LinkedList<Node> visited)
         {
             foreach (Node node in visited)
@@ -187,9 +116,9 @@ namespace DealerOnTrainsProblemThree
                 var nodeToVisit = new Stack<Node>();
                 nodeToVisit.Push(source);
 
-                while (nodeToVisit.Count != 0||counter==1)
+                while (nodeToVisit.Count != 0 || counter == 1)
                 {
-                   
+
                     if (!seenPath.Contains(currentPath + sourceNode.NodeName) && counter <= maxStop)
                     {
                         currentPath += sourceNode.NodeName;
@@ -205,7 +134,7 @@ namespace DealerOnTrainsProblemThree
                         var currentSourceUnseenAjacentNode = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !seenPath.Contains(currentPath + x.Destination.NodeName)).FirstOrDefault();
                         nodeToVisit.Push(sourceNode);
                         if (currentSourceUnseenAjacentNode != null)
-                        {                           
+                        {
                             sourceNode = currentSourceUnseenAjacentNode.Destination;
                         }
                         counter++;
@@ -213,7 +142,7 @@ namespace DealerOnTrainsProblemThree
                     else
                     {
                         sourceNode = nodeToVisit.Pop();
-                        currentPath = currentPath.Length==1?currentPath: currentPath.Substring(0, currentPath.Length - 1);
+                        currentPath = currentPath.Length == 1 ? currentPath : currentPath.Substring(0, currentPath.Length - 1);
                         counter--;
                     }
 
@@ -223,6 +152,133 @@ namespace DealerOnTrainsProblemThree
             }
             return foundPath;
         }
+        public int DijstraAlgorithmShortestPath(string source, string destination)
+        {
 
+            var sourceNode = FindNode(source.ToUpper().Trim());
+            var destinationNode = FindNode(destination.ToUpper().Trim());
+            var visitedStack = new Stack<Node>();
+            sourceNode.Distance = 0;
+            visitedStack.Push(sourceNode);
+            while (visitedStack.Count > 0)
+            {
+                //set all adjacent nodes distamce to int max 
+                var allDirectEdgesToSource = sourceNode.ListOfAllEdgesConnectedToThisNode();
+
+                foreach (Edge edge in allDirectEdgesToSource)
+                {
+                    edge.Destination.Distance = Math.Min((sourceNode.Distance + edge.Weight), edge.Destination.Distance);
+                }
+
+                var smallestEdgeNotVisited = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !x.Visited).OrderBy(t => t.Weight).FirstOrDefault();
+                if (smallestEdgeNotVisited != null)
+                {
+                    smallestEdgeNotVisited.Visited = true;
+                    visitedStack.Push(smallestEdgeNotVisited.Destination);
+                    sourceNode = smallestEdgeNotVisited.Destination;
+                }
+                else
+                {
+                    sourceNode = visitedStack.Pop();
+                }
+            }
+
+            return destinationNode.Distance;
+        }
+
+        public List<string> FindPathWithMaxDistance(string source, string destination, int maxStopOrMaxDistance, bool isMaxDistance = false)
+        {
+
+            try
+            {
+                List<string> allPaths = new List<string>();
+                string pathFound = string.Empty;
+                var sourceNode = FindNode(source.ToUpper().Trim());
+                var destinationNode = FindNode(destination.ToUpper().Trim());
+
+                if (sourceNode == null || destination == null)
+                {
+                    //return 0 for this routes is both the source and destination is null
+                    return allPaths;
+                }
+                if (isMaxDistance)
+                {
+                    allPaths = FindPathWithMaxDistanceAlgorithm(sourceNode, destinationNode, maxStopOrMaxDistance);
+                }
+                else
+                {
+                    allPaths = allPaths = AllPathFromNode(sourceNode, destinationNode, maxStopOrMaxDistance);
+                }
+
+
+                return allPaths;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Something went wrong performing this task this is sample of the issue {ex.Message}");
+                throw ex;
+            }
+            finally
+            {
+                GC.Collect();
+            }
+        }
+        private List<string> FindPathWithMaxDistanceAlgorithm(Node source, Node destination, int maxDiatance)
+        {
+
+            List<string> seenPath = new List<string>();
+            List<string> foundPath = new List<string>();
+            int currentDistance = 0;
+            var adjancentList = source.ListOfAllEdgesConnectedToThisNode();
+
+            foreach (Edge edge in adjancentList)
+            {
+                int sourceNodeEdgeDistance = edge.Weight;
+                int previouseWeight = 0;
+                int counter = 1;
+                var currentPath = source.NodeName;
+                var sourceNode = edge.Destination;
+                var nodeToVisit = new Stack<Node>();
+                nodeToVisit.Push(source);
+
+                while (nodeToVisit.Count != 0 || counter == 1)
+                {
+
+                    if (!seenPath.Contains(currentPath + sourceNode.NodeName) && currentDistance <= maxDiatance)
+                    {
+                        currentPath += sourceNode.NodeName;
+                        currentDistance += sourceNodeEdgeDistance;
+                        seenPath.Add(currentPath);
+
+                        var nodeFound = sourceNode.Equals(destination);
+
+                        if (nodeFound)
+                        {
+                            foundPath.Add(currentPath);
+                        }
+                        var currentSourceUnseenAjacentNode = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !seenPath.Contains(currentPath + x.Destination.NodeName)).FirstOrDefault();
+                        nodeToVisit.Push(sourceNode);
+                        if (currentSourceUnseenAjacentNode != null)
+                        {
+                            sourceNode = currentSourceUnseenAjacentNode.Destination;
+                            previouseWeight = sourceNodeEdgeDistance;
+                            sourceNodeEdgeDistance = currentSourceUnseenAjacentNode.Weight;
+                        }
+                        counter++;
+                    }
+                    else
+                    {
+                        sourceNode = nodeToVisit.Pop();
+                        currentPath = currentPath.Length == 1 ? currentPath : currentPath.Substring(0, currentPath.Length - 1);
+                        counter--;
+                        currentDistance -= previouseWeight;
+                    }
+
+
+                }
+
+            }
+            return foundPath;
+        }
     }
 }

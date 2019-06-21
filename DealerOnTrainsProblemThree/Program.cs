@@ -15,16 +15,19 @@ namespace DealerOnTrainsProblemThree
             DirectedGraph dgraph = new DirectedGraph();
             var input = Console.ReadLine();
             dgraph.CreateGrapgh(input);
-            Console.WriteLine("Calculate distance to a route by proviting route informat a-b-c ");          
+            Console.WriteLine("Calculate distance to a route by proviting route informat a-b-c ");
             var distance = Console.ReadLine();
-             var result = dgraph.CalculateDistanceOfRoute(distance);
-            var displayedResult = result < 0 ? "NO SUCH ROUTE" : result.ToString();
-            Console.WriteLine(displayedResult);
+            var result = dgraph.DistanceOfRoute(distance);
+            Console.WriteLine(result);
             Console.WriteLine("Calculate all path between towns denoted as  source");
             var pathSource = Console.ReadLine();
             Console.WriteLine("Calculate all path between towns denoted as  source");
             var pathDestination = Console.ReadLine();
-            var resultpath = dgraph.CalculateNumbersOfRoute(pathSource,pathDestination);
+            Console.WriteLine("please input maximum no of stops as integer");
+            dgraph.ShortestPathBetweenTwoNodes(pathSource, pathDestination);
+            var maxstop = Console.ReadLine();
+            var maxStopValue = Convert.ToInt32(maxstop);
+            var resultpath = dgraph.CalculateNumbersOfRoute(pathSource, pathDestination, maxStopValue, false);
             Console.WriteLine(resultpath);
             Console.ReadLine();
         }
