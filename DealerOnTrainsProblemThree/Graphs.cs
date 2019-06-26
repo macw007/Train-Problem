@@ -257,6 +257,7 @@ namespace DealerOnTrainsProblemThree
 
             List<string> seenPath = new List<string>();
             List<string> foundPath = new List<string>();
+            Stack<int> previouseDistances = new Stack<int>();
             int currentDistance = 0;
             var adjancentList = source.ListOfAllEdgesConnectedToThisNode();
 
@@ -264,45 +265,68 @@ namespace DealerOnTrainsProblemThree
             {
                 int sourceNodeEdgeDistance = edge.Weight;
                 int previouseWeight = 0;
-                int counter = 1;
                 var currentPath = source.NodeName;
                 var sourceNode = edge.Destination;
                 var nodeToVisit = new Stack<Node>();
                 nodeToVisit.Push(source);
 
-                while (nodeToVisit.Count != 0 || counter == 1)
+                while (nodeToVisit.Count > 0)
                 {
+                    var hasBeenSeen = seenPath.Contains(currentPath + sourceNode.NodeName);
 
-                    if (!seenPath.Contains(currentPath + sourceNode.NodeName) && (currentDistance + sourceNodeEdgeDistance) <= maxDiatance)
+                    if ((!hasBeenSeen && (currentDistance + sourceNodeEdgeDistance) < maxDiatance) || (hasBeenSeen && (currentDistance + sourceNodeEdgeDistance) < maxDiatance))
                     {
-                        currentPath += sourceNode.NodeName;
-                        currentDistance += sourceNodeEdgeDistance;
-                        seenPath.Add(currentPath);
 
-                        var nodeFound = sourceNode.Equals(destination);
+                        if (!hasBeenSeen)
+                        {
+                            currentPath += sourceNode.NodeName;
+                            currentDistance += sourceNodeEdgeDistance;
+                            seenPath.Add(currentPath);
+                            var nodeFound = sourceNode.Equals(destination);
 
-                        if (nodeFound)
-                        {
-                            foundPath.Add(currentPath);
+                            if (nodeFound)
+                            {
+                                foundPath.Add(currentPath);
+                            }
+
+                            var currentSourceUnseenAjacentNode = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !seenPath.Contains((currentPath + x.Destination.NodeName))).FirstOrDefault();
+
+                            if (currentSourceUnseenAjacentNode != null)
+                            {
+                                nodeToVisit.Push(sourceNode);
+                                sourceNode = currentSourceUnseenAjacentNode.Destination;
+                                previouseDistances.Push(sourceNodeEdgeDistance);
+                                sourceNodeEdgeDistance = currentSourceUnseenAjacentNode.Weight;
+                            }
                         }
-                        var currentSourceUnseenAjacentNode = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !seenPath.Contains(currentPath + x.Destination.NodeName)).FirstOrDefault();
-                        nodeToVisit.Push(sourceNode);
-                        if (currentSourceUnseenAjacentNode != null)
+                        else
                         {
-                            sourceNode = currentSourceUnseenAjacentNode.Destination;
-                            previouseWeight = sourceNodeEdgeDistance;
-                            sourceNodeEdgeDistance = currentSourceUnseenAjacentNode.Weight;
+                            sourceNode = nodeToVisit.Pop();
+
+                            var currentSourceUnseenAjacentNode = sourceNode.ListOfAllEdgesConnectedToThisNode().Where(x => !seenPath.Contains((currentPath + x.Destination.NodeName))).FirstOrDefault();
+                            if (currentSourceUnseenAjacentNode != null)
+                            {
+                                //currentDistance -= previouseDistances.Pop(); ;
+                                nodeToVisit.Push(sourceNode);
+                                sourceNode = currentSourceUnseenAjacentNode.Destination;
+                                sourceNodeEdgeDistance = currentSourceUnseenAjacentNode.Weight;
+                            }
+                            else
+                            {
+                                currentPath = currentPath.Substring(0, currentPath.Length - 1);
+                                previouseWeight = previouseDistances.Count > 0 ? previouseDistances.Pop() : 0;
+                                currentDistance -= previouseWeight;
+                                sourceNodeEdgeDistance = previouseWeight;
+                            }
+
                         }
-                        counter++;
                     }
                     else
                     {
                         sourceNode = nodeToVisit.Pop();
                         currentPath = currentPath.Length == 1 ? currentPath : currentPath.Substring(0, currentPath.Length - 1);
-                        counter--;
-                        currentDistance -= previouseWeight;
+                        currentDistance -= previouseDistances.Pop();
                     }
-
 
                 }
 
